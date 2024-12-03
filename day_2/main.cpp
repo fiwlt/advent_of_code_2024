@@ -1,12 +1,14 @@
 // result part 1: 549
 // result part 2: 589
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <deque>
 #include <filesystem>
 #include <ranges>
 #include <vector>
+#include <charconv>
 
 auto is_report_safe(const std::vector<int64_t> &report, const bool &dampener_on = false) -> bool;
 
