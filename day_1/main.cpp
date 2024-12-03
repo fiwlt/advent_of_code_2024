@@ -45,7 +45,7 @@ int main(const int argc, const char *argv[])
 //turns assignment into accumulation
 class accumulating_iterator
 {
-  const std::shared_ptr<int64_t> sum;
+  std::shared_ptr<int64_t> sum;
 public:
   explicit accumulating_iterator(const std::shared_ptr<int64_t> &value): sum(value) {}
   accumulating_iterator &operator=(int64_t &value) { *this->sum += value; return *this; }
