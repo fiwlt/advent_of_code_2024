@@ -72,6 +72,9 @@ void parser::function_mul(const char &c) {
       this->f_name.push_back(c);
     } else {
       this->clear_parser_state();
+      if (size > 0) {
+        this->function_name(c);
+      }
     }
   } else {
     this->current_state = state_function_start;
@@ -86,6 +89,9 @@ void parser::function_do(const char &c) {
       this->f_name.push_back(c);
     } else {
       this->clear_parser_state();
+      if (size > 0) {
+        this->function_name(c);
+      }
     }
   } else {
     this->f_type = _dont;
@@ -118,7 +124,7 @@ void parser::function_start(const char &c) {
     }
   } else {
     this->clear_parser_state();
-    this->step(c);
+    this->function_name(c);
   }
 }
 
@@ -142,7 +148,7 @@ void parser::parameter(const char &c) {
   } else {
     if (size == 0) {
       this->clear_parser_state();
-      this->step(c);
+      this->function_name(c);
     } else if (this->par_idx < this->max_pars - 1) {
       this->current_state = state_par_separator;
       this->par_separator(c);
@@ -159,7 +165,7 @@ void parser::par_separator(const char &c) {
     this->current_state = state_parameter;
   } else {
     this->clear_parser_state();
-    this->step(c);
+    this->function_name(c);
   }
 }
 
@@ -169,7 +175,7 @@ void parser::function_end(const char &c) {
     this->run_instruction();
   } else {
     this->clear_parser_state();
-    this->step(c);
+    this->function_name(c);
   }
 }
 
