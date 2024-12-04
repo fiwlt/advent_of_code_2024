@@ -16,8 +16,8 @@ class parser {
                                '5', '6', '7', '8', '9'};
   const std::vector<std::vector<char>> func_names{
       {'m', 'u', 'l'}, {'d', 'o'}, {'d', 'o', 'n', '\'', 't'}};
-  const int max_pars = 2;
-  const int max_par_length = 3;
+  const size_t max_pars = 2;
+  const uint8_t max_par_length = 3;
 
   state current_state;
   type f_type;
@@ -53,9 +53,8 @@ public:
   bool can_be_disabled;
 
   parser()
-      : current_state(state_function_name), f_name(), acc_value(),
-        exe_enabled(true), f_type(_undef), can_be_disabled(false), pars(),
-        par_idx() {};
+      : current_state(state_function_name), f_type(_undef), f_name(), pars(),
+        par_idx(), acc_value(), exe_enabled(true), can_be_disabled(false) {};
 
   void init();
 
