@@ -10,7 +10,7 @@
 #include <map>
 #include <vector>
 
-enum direction { unknown, right, down_right, down, down_left };
+enum direction { down_right = -1, down, down_left, right };
 
 struct word_inst {
   char word_key{};
@@ -18,22 +18,29 @@ struct word_inst {
   std::vector<direction> dir{};
 };
 
-auto update_position(word_inst &p, const char &c, const std::string_view &s,
-                     int64_t &count,
-                     std::vector<std::vector<word_inst>> &c_line,
-                     const size_t &line_idx, direction dir) -> void {
-  if (p.char_pos > 0 &&
-      std::find(p.dir.begin(), p.dir.end(), dir) == p.dir.end()) {
-    return;
-  }
-  ++p.char_pos;
-  if (std::find(p.dir.begin(), p.dir.end(), dir) == p.dir.end()) {
-    p.dir.push_back(dir);
-  }
-  if (p.char_pos == s.size() - 1) {
-    ++count;
-  } else {
-    c_line[line_idx].push_back(p);
+auto update_position(std::vector<word_inst> &set, const char &c,
+                          int64_t &count,
+                          std::vector<std::vector<word_inst>> &c_line,
+                          const size_t &line_idx, direction dir,
+                          std::map<char, std::string_view> &word_list) -> void {
+  for (auto &w : set) {
+    std::string_view s{word_list.at(w.word_key)};
+    if (c == s.at(w.char_pos + 1)) {
+      bool dir_unknown =
+          std::find(w.dir.begin(), w.dir.end(), dir) == w.dir.end();
+      if (w.char_pos > 0 && dir_unknown) {
+        continue;
+      }
+      ++w.char_pos;
+      if (w.char_pos == s.size() - 1) {
+        ++count;
+      } else {
+        if (dir_unknown) {
+          w.dir.push_back(dir);
+        }
+        c_line[line_idx].push_back(w);
+      }
+    }
   }
 }
 
@@ -62,14 +69,13 @@ int main(const int argc, const char *argv[]) {
   std::vector<std::vector<word_inst>> c_line{};
 
   while (std::getline(file, buf)) {
-    std::vector<int> pline_size{};
     for (const auto &c : buf) {
       std::vector<word_inst> c_set{};
       if (!c_line.empty() && !c_line.back().empty()) {
         std::copy(c_line.back().begin(), c_line.back().end(),
                   std::back_inserter(c_set));
       }
-       c_line.push_back({});
+      c_line.push_back({});
       if (word_list.contains(c)) {
         word_inst tmp{};
         tmp.word_key = c;
@@ -77,57 +83,20 @@ int main(const int argc, const char *argv[]) {
       }
 
       size_t line_idx{c_line.size() - 1};
-      for (auto &p : c_set) {
-        std::string_view s{word_list.at(p.word_key)};
-        if (c == s.at(p.char_pos + 1)) {
-          update_position(p, c, s, results.at(0), c_line, line_idx, right);
-        }
-      }
+      update_position(c_set, c, results.at(0), c_line, line_idx, right,
+                           word_list);
 
       // check previous line
       if (!p_line.empty()) {
         std::vector<word_inst> p_set{};
-        int offset{-1};
-        if (line_idx > 0) {
-          std::copy(p_line.at(line_idx + offset).begin(),
-                    p_line.at(line_idx + offset).end(),
-                    std::back_inserter(p_set));
-
-          for (auto &p : p_set) {
-            std::string_view s{word_list.at(p.word_key)};
-            if (c == s.at(p.char_pos + 1)) {
-              update_position(p, c, s, results.at(0), c_line, line_idx,
-                              down_right);
-            }
-          }
-        }
-        ++offset;
-        p_set.clear();
-        std::copy(p_line.at(line_idx + offset).begin(),
-                  p_line.at(line_idx + offset).end(),
-                  std::back_inserter(p_set));
-
-        for (auto &p : p_set) {
-          std::string_view s{word_list.at(p.word_key)};
-          if (c == s.at(p.char_pos + 1)) {
-            update_position(p, c, s, results.at(0), c_line, line_idx, down);
-          }
-        }
-
-        p_set.clear();
-        ++offset;
-        if (line_idx < p_line.size() - 1) {
-          std::copy(p_line.at(line_idx + offset).begin(),
-                    p_line.at(line_idx + offset).end(),
-                    std::back_inserter(p_set));
-
-          for (auto &p : p_set) {
-            std::string_view s{word_list.at(p.word_key)};
-            if (c == s.at(p.char_pos + 1)) {
-              update_position(p, c, s, results.at(0), c_line, line_idx,
-                              down_left);
-
-            }
+        for (auto &offset : {-1, 0, 1}) {
+          p_set.clear();
+          if (line_idx + offset >= 0 && line_idx + offset < p_line.size()) {
+            std::copy(p_line.at(line_idx + offset).begin(),
+                      p_line.at(line_idx + offset).end(),
+                      std::back_inserter(p_set));
+            update_position(p_set, c, results.at(0), c_line, line_idx,
+                                 direction(offset), word_list);
           }
         }
       }
