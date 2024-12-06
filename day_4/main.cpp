@@ -24,7 +24,6 @@ const std::map<char, std::string_view> word_list = {{'X', "XMAS"},
 auto update_position(std::vector<word_inst> &set, const char &c, int64_t &count,
                      std::vector<std::vector<word_inst>> &c_line,
                      const size_t &line_idx, direction dir) -> void {
-//                     std::map<char, std::string_view> &word_list) -> void {
   for (auto &w : set) {
     std::string_view s{word_list.at(w.word_key)};
     if (c == s.at(w.char_pos + 1)) {
