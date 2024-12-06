@@ -96,6 +96,7 @@ auto make_valid(const std::string &buf,
       p.pre = f_pmap.at(p.v);
     }
   }
+  //TODO: detect non-transitive loops/crashes before they happen
   std::sort(pages.begin(), pages.end(), std::less());
   score += pages.at((pages.size() - 1) / 2).v;
 }
